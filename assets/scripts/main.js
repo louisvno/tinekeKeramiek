@@ -1,7 +1,9 @@
 var cloudStorage = firebase.storage();
 var database = firebase.database();
 
-
+/*
+* get reference (filepath) from Firebase to upload file to
+*/
 function getStorageRef (cloudStorage, folderName, fileName){ 
     return cloudStorage.ref().child(folderName + "/" + fileName);
 }
@@ -15,52 +17,79 @@ function getPostRef(database){
               }
 }
 
-//.set(postData);
-
-function getImg () {
-    return document.getElementById('file1').files[0];
+function getFiles () {
+    return document.querySelectorAll("input[type=file]");
 }
 
+/*
+* Returns an array of promises
+*/
+function storeImages(cloudStorage, images, postId ){
+    var imgArr = [];
+    for (var i=0;i < images.length; i++) {
+        if(images[i].files.length > 0){  
+          var imgName=images[i].files[0].name ;
+          var img = images[i].files[0];
+          imgArr.push(getStorageRef(cloudStorage, postId, imgName).put(img));
+        }
+    }
+    return imgArr;
+}
+//first uppload all images, then push to db
 function sendPost(cloudStorage, database){ 
-    
+    var images = getFiles();
     var postRef = getPostRef(database);
-    var storeImg = getStorageRef(cloudStorage, postRef.postId, "fileName.txt").put(getImg());
     
-    storeImg.then(function(snapshot) {
-                    //write post data
-                    var link =snapshot.downloadURL;
-                    var d = new Date();
-                    var data = writePostData("9229", d.toUTCString(), getFormInput, link , "Hello", "world")
-                    //post to db
-                    postRef.path.set(data);
-                    });
+    var storeImags = storeImages(cloudStorage, images, postRef.postId);
+    
+    Promise.all(storeImags).then(function(result) {
+        //write post data
+        var d = new Date();
+        var imgData = writeImgData(images, d.toUTCString(), postRef.postId);
+        var postData = writePostData("9229", d.toUTCString(), getFormInput,imgData);
+        //post to db
+        postRef.path.set(postData);
+        
+    }).catch(function(error){
+        console.log("There was an error, please try again")
+    });
 }
+
 
 function getFormInput() {
     return {
-        text : "hehh",
-        title: "hehe",
-        category : "music",
+        text : "Beschrijving",
+        title: "Vrolijke vogels",
+        category : "Dieren",
     };
 }
 
-function writePostData(userId, publishDate, formInput, imgLink, imgName, imgDesc){
+function writePostData(userId, date, formInput, imgData){
     return {
         userId : userId,
-        publishDate : publishDate,
+        publishDate : date,
         text : formInput.text || "",
         title: formInput.title || "",
         category : formInput.category || "",
-        images : {
-                img1 : {
-                        link: imgLink,
-                        name:   imgName,
-                        desc: imgDesc
-                        } 
-                 }
+        images : imgData
     };
 }
 
+function writeImgData(images, date,postId){
+    var imgObj = {};
+    for (var i=0;i < images.length; i++) {
+      if(images[i].files.length > 0){ 
+          var imgName = images[i].files[0].name;
+          var data =   {
+                            name: imgName,
+                            publishDate: date,
+                            storagePath: postId + "/" + imgName
+                       };
+          imgObj["img" + i] = data;
+      }
+    }
+    return imgObj;
+}
 
 //var postData = writePostData(28,2992,"hello","world","music",[{link:"lll",name:"koll",desc:"kjkd"}])
 
