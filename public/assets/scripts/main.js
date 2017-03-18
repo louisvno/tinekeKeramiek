@@ -40,16 +40,17 @@ function sendPost(cloudStorage, database){
     var images = getFiles();
     var postRef = getPostRef(database);
     
-    var storeImags = storeImages(cloudStorage, images, postRef.postId);
+    var storeImgs = storeImages(cloudStorage, images, postRef.postId);
     
-    Promise.all(storeImags).then(function(result) {
+    Promise.all(storeImgs).then(function(result) {
         //write post data
         var d = new Date();
         var imgData = writeImgData(images, d.toUTCString(), postRef.postId);
-        var postData = writePostData("9229", d.toUTCString(), getFormInput,imgData);
-        //post to db
-        postRef.path.set(postData);
-        
+        if (!isEmptyObj(imgData)){ 
+            var postData = writePostData("9229", d.toUTCString(), getFormInput(),imgData);
+            //post to db
+            postRef.path.set(postData);
+        }
     }).catch(function(error){
         console.log("There was an error, please try again")
     });
@@ -91,6 +92,9 @@ function writeImgData(images, date,postId){
     return imgObj;
 }
 
+function isEmptyObj(obj){
+    return Object.keys(obj).length < 1;
+}
 //var postData = writePostData(28,2992,"hello","world","music",[{link:"lll",name:"koll",desc:"kjkd"}])
 
 // var updates = {};
