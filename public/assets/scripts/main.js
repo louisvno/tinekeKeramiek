@@ -26,35 +26,76 @@ function getFiles () {
 */
 function storeImages(cloudStorage, images, postId ){
     var imgArr = [];
+    
     for (var i=0;i < images.length; i++) {
         if(images[i].files.length > 0){  
-          var imgName=images[i].files[0].name ;
-          var img = images[i].files[0];
-          imgArr.push(getStorageRef(cloudStorage, postId, imgName).put(img));
+          var imgName = images[i].files[0].name ;
+          var file = images[i].files[0];
+          imgArr.push(getStorageRef(cloudStorage, postId, imgName).put(file));
         }
     }
-    return imgArr;
+    return Promise.all(imgArr);
 }
-//first uppload all images, then push to db
+
+//first uppload all images, then push data to db
 function sendPost(cloudStorage, database){ 
     var images = getFiles();
     var postRef = getPostRef(database);
     
-    var storeImgs = storeImages(cloudStorage, images, postRef.postId);
-    
-    Promise.all(storeImgs).then(function(result) {
-        //write post data
-        var d = new Date();
-        var imgData = writeImgData(images, d.toUTCString(), postRef.postId);
-        if (!isEmptyObj(imgData)){ 
-            var postData = writePostData("9229", d.toUTCString(), getFormInput(),imgData);
+    var storeImgs = storeImages(cloudStorage, images, postRef.postId)
+                    .then(function (result){
+                        var imgData ={};
+                        for (var i=0;i < result.length; i++) {
+                          if(images[i].files.length > 0){ 
+                            var data =   {
+                                        name: result[i].metadata.name,
+                                        publishDate: result[i].metadata.timeCreated,
+                                        storagePath: result[i].metadata.fullPath,
+                                        url: result[i].downloadURL
+                                       };
+                            imgData["img" + i] = data;
+                            }
+                        }
+                        return imgData;
+                    });
+
+    var storeData = function (imgData) {
+          if (!isEmptyObj(imgData)){ 
+            var d = new Date();
+            var postData = writePostData("user_id", d.toUTCString(), getFormInput(),imgData);
             //post to db
+            //also a promise
             postRef.path.set(postData);
-        }
-    }).catch(function(error){
-        console.log("There was an error, please try again")
-    });
-}
+          } else {
+            throw new Error("data object empty");
+          }
+    }
+    
+    storeImgs.then(storeData);
+ }
+//    storeImgs.then(function (result){
+//         
+//        for (var i=0;i < result.length; i++) {
+//          if(images[i].files.length > 0){ 
+//            var data =   {
+//                        name: result[i].metadata.name,
+//                        publishDate: result[i].metadata.timeCreated,
+//                        storagePath: result[i].metadata.fullPath,
+//                        url: result[i].downloadURL
+//                       };
+//            imgData["img" + i] = data;
+//            }
+//        }
+//        
+//        if (!isEmptyObj(imgData)){ 
+//            var d = new Date();
+//            var postData = writePostData("user_id", d.toUTCString(), getFormInput(),imgData);
+//            //post to db
+//            //also a promise
+//            postRef.path.set(postData);
+//        }
+//    });
+//}
 
 
 function getFormInput() {
@@ -75,26 +116,56 @@ function writePostData(userId, date, formInput, imgData){
         images : imgData
     };
 }
+//returns a promise off all img download links
+//function getFileURLs(cloudStorage,images, postId){
+//    var imgURLs = [];
+//    
+//    for (var i=0;i < images.length; i++) {
+//      if(images[i].files.length > 0){ 
+//         var imgName = images[i].files[0].name;
+//         imgURLs.push(getStorageRef(cloudStorage, postId, imgName).getDownloadURL());
+//        }   
+//    }
+//    return Promise.all(imgURLs).then(function (URLs) {
+//       return URLs;
+//    });
+//}
 
-function writeImgData(images, date,postId){
-    var imgObj = {};
-    for (var i=0;i < images.length; i++) {
-      if(images[i].files.length > 0){ 
-          var imgName = images[i].files[0].name;
-          var data =   {
-                            name: imgName,
-                            publishDate: date,
-                            storagePath: postId + "/" + imgName
-                       };
-          imgObj["img" + i] = data;
-      }
-    }
-    return imgObj;
+function writeImgData(cloudStorage,images, date, postId){
+   var imgObj = {};
+   var imgURLs = [];
+   
+//   for (var i=0;i < images.length; i++) {
+//      if(images[i].files.length > 0){ 
+//         var imgName = images[i].files[0].name;
+//         imgURLs.push(getStorageRef(cloudStorage, postId, imgName).getDownloadURL());
+//        }   
+//    }
+    
+//    Promise.all(imgURLs).then(function(url){ 
+//        for (var i=0;i < images.length; i++) {
+//          if(images[i].files.length > 0){ 
+//            var data =   {
+//                        name: images[i].files[0].name,
+//                        publishDate: date,
+//                        storagePath: postId + "/" + images[i].files[0].name,
+//                        url: url[i]
+//                       };
+//            imgObj["img" + i] = data;
+//            }
+//        }
+//        return imgObj;  
+//        
+//      }).catch(function(error){
+//        throw new Error("failed to get downloadurl");
+//      });
 }
 
 function isEmptyObj(obj){
     return Object.keys(obj).length < 1;
 }
+
+
 //var postData = writePostData(28,2992,"hello","world","music",[{link:"lll",name:"koll",desc:"kjkd"}])
 
 // var updates = {};
