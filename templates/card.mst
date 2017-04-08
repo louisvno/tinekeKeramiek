@@ -1,0 +1,11 @@
+{{#each this}}
+    {{#with this as |post|}}
+        <div class="col-xxs-12 col-xs-6 col-sm-3">
+            <div class="col-content">
+               <img src="{{post.images.img0.url}}" alt="">
+                <h3>{{post.title}}</h3>    
+                 <p>{{post.text}}</p>              
+            </div>
+        </div>
+    {{/with}}
+{{/each}}

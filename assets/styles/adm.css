@@ -1,0 +1,31 @@
+#post-text{
+    display:block;
+}
+#post-title{
+    margin-left:5px;
+    height:30px;
+}
+
+#post-category{
+    height: 30px;
+}
+
+label{
+    display:block;
+}
+
+input[type="file"]{
+    margin-top:5px;
+}
+
+#send-post{
+    margin-top:10px;
+    height: 40px;
+    display:block;
+    width:180px;
+    border-radius:5px;
+    background-color: rgba(111,128,135,0.90);
+    color:rgba(255,255,255,0.80);
+    box-shadow: 2px 2px 1px rgba(111,128,135,0.40);
+    border: none;
+}
