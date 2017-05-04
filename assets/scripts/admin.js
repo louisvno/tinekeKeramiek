@@ -1,5 +1,6 @@
 
 var provider = new firebase.auth.GoogleAuthProvider();
+
 //validations : no 2 files same name, title,category,
 document.getElementById("send-post").addEventListener("click",function (e){
     var cloudStorage = firebase.storage();
@@ -7,11 +8,9 @@ document.getElementById("send-post").addEventListener("click",function (e){
     
     e.preventDefault();
     
-    if (isFormValid()){
+    if (isValidForm()){
         sendPost(cloudStorage, database);
     }
-    //if validate
-    //send
 });
 
 firebase.auth().signInWithPopup(provider).then(function(result) {
@@ -40,10 +39,6 @@ function getPostRef(database){
     return  { postId: postId,
               path:  path
               }
-}
-
-function getFiles () {
-    return document.querySelectorAll("input[type=file]");
 }
 
 /*
@@ -98,6 +93,10 @@ function getFormInput() {
     };
 }
 
+function getFiles () {
+    return document.querySelectorAll("input[type=file]");
+}
+
 function writePostData(userId, date, formInput, imgData){
     var imgDataObj ={};
     var images = getFiles();
@@ -123,24 +122,19 @@ function writePostData(userId, date, formInput, imgData){
 }
 
 
+/*
+*   Validation functions
+*/
+
 function isEmptyObj(obj){
     return Object.keys(obj).length < 1;
 }
 
-function isFormValid(){
-    if (checkFormInput()){
-        return true;
-    } else return false;
-    //if files do not have same name
-    //at least one file selected
-    
+function isValidForm(){
+    return (formNotEmpty() && validateFileNames())
 }
 
-function checkFileNames(){
-    
-}
-
-function checkFormInput(){
+function formNotEmpty(){
     var formInput = getFormInput();
     if (formInput.text && formInput.title && formInput.category != "default"){
         return true;
@@ -148,3 +142,37 @@ function checkFormInput(){
     else return false ; 
 }
 
+function validateFileNames(){
+    var files = getFiles();
+    
+    if (files.length > 0){   
+        var fileNames=[];
+        var isUnique = true;      
+        
+        for (var i=0; i < files.length; i++){
+            var fileName = files[i].value.split("\\").pop().toLowerCase();      
+            if (fileName.length>0){ 
+                if (isDuplicate(fileName,fileNames)){
+                    isUnique = false;
+                    break;
+                } else{
+                    fileNames.push(fileName);
+                }
+            }
+        }
+        return isUnique;   
+    } 
+    else return false;
+}
+
+function isDuplicate(fileName, fileNames){
+    if (fileNames.length == 0){
+        return false;
+    }   
+    
+    if (fileNames.indexOf(fileName) === -1){
+        return false;
+    } else if (fileNames.indexOf(fileName) > -1){
+        return true;
+    }
+}
