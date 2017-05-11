@@ -1,15 +1,35 @@
 
 var provider = new firebase.auth.GoogleAuthProvider();
 
-//validations : no 2 files same name, title,category,
 document.getElementById("send-post").addEventListener("click",function (e){
-    var cloudStorage = firebase.storage();
-    var database = firebase.database();
-    
+    var cloudStorage = firebase.storage(),
+    database = firebase.database(),
+    loader = document.querySelector('.loader'),
+ 		sendButton = document.getElementById('send-post'),
+    logMsg = document.getElementById("logmsg");
+      
     e.preventDefault();
     
     if (isValidForm()){
-        sendPost(cloudStorage, database);
+          logMsg.style.display='none';
+          loader.style.display= 'inline-block';
+          loader.classList.add('spin');
+          sendButton.disabled = true;
+        
+        sendPost(cloudStorage, database).then(function (message){ 
+          loader.style.display= 'none';
+          logMsg.style.color='green';
+          logMsg.innerHTML= message;  
+          logMsg.style.display='inline';
+          sendButton.disabled = false;
+      	})
+      .catch(function (error){
+        	loader.style.display= 'none';
+          logMsg.innerHTML= error.message;
+          logMsg.style.display='inline';
+          logMsg.style.color='red';
+          sendButton.disabled = false;
+        });
     }
 });
 
@@ -42,6 +62,7 @@ function getPostRef(database){
 }
 
 /*
+* Function that uploads a series of files to firebase
 * Returns an array of promises
 */
 function storeImages(cloudStorage, images, postId ){
@@ -66,12 +87,12 @@ function storeImages(cloudStorage, images, postId ){
 function sendPost(cloudStorage, database){ 
     var images = getFiles();
     var postRef = getPostRef(database);
-    //NOTE "then" also returns a promise, takes callback as parameter with one argument > fullfilment value
-    storeImages(cloudStorage, images, postRef.postId)
+
+    return storeImages(cloudStorage, images, postRef.postId)
         .then(function (imgData){
            if (!isEmptyObj(imgData)){ 
-                var d = new Date();
-                var postData = writePostData("user_id", d.toUTCString(), getFormInput(),imgData); 
+                var date = new Date();
+                var postData = writePostData("user_id", date.toUTCString(), getFormInput(),imgData); 
                 //post to db returns Promise
                 return postRef.path.set(postData);
            }else {
@@ -79,9 +100,9 @@ function sendPost(cloudStorage, database){
            }
         })
         .then(function (imgData){
-            console.log("Upload success!")
+            return "Upload success!";
         }).catch(function(error){
-            console.log(error.message);
+            throw error;
         });   
  }
 
@@ -176,3 +197,5 @@ function isDuplicate(fileName, fileNames){
         return true;
     }
 }
+
+

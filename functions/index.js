@@ -1,3 +1,4 @@
+const UUID = require("uuid/v4");
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const gcs = require('@google-cloud/storage')();
@@ -16,7 +17,8 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
     // Download file from bucket.
     const bucket = gcs.bucket(fileBucket);
     const tempFilePath = "/tmp/${fileName}";
-    
+    const tempFilePathx500 = "/tmp/${fileName}_500";
+    const tempFilePathx1000 = "/tmp/${fileName}_1000";
     // Exit if this is triggered on a file that is not an image.
     if (!contentType.startsWith('image/')) {
       console.log('This is not an image.');
@@ -25,13 +27,14 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
 
     // Get the file name.
     const fileName = filePath.split('/').pop();
-    
     //Get postId
     const postId = filePath.split('/').shift();
-
+    //Generate custom uuid to be able to reference in database
+    const uuid500 = UUID();
+    const uuid1000 = UUID();
     // Exit if the image is already a thumbnail.
-    if (fileName.startsWith('thumb_')) {
-      console.log('Already a Thumbnail.');
+    if (fileName.startsWith('x500_') || fileName.startsWith('x1000_')) {
+      console.log('Already Processed.');
       return;
     }
 
@@ -42,34 +45,60 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
     }
     
     return bucket.file(filePath).download({destination: tempFilePath})
-    .then(() => {
-      console.log('Image downloaded locally to', tempFilePath);
-      // Generate a thumbnail using ImageMagick.
-      return spawn('convert', [tempFilePath, '-thumbnail', '200x200>', tempFilePath])
+      .then(() => {
+        console.log('Image downloaded locally to', tempFilePath);
+        // Resize image using ImageMagick.
+        return Promise.all([spawn('convert',[ tempFilePath, '-resize', '500x500>', tempFilePathx500]),
+                            spawn('convert',[ tempFilePath, '-resize', '1000x1000>', tempFilePathx1000])
+                            ]);
+        })
+      .then(() => {
+        console.log('Image created at', tempFilePath);
+        // Add a 'preview_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
+        const newFilePathx500 = filePath.replace(/(\/)?([^\/]*)$/, `$1x500_$2`);
+        const newFilePathx1000 = filePath.replace(/(\/)?([^\/]*)$/, `$1x1000_$2`);
+        // Uploading the thumbnail.
+        //docs https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/1.1.0/storage/bucket?method=upload
+        return Promise.all([bucket.upload(tempFilePathx500, {  destination: newFilePathx500,
+                                              metadata: {
+                                                        contentType: 'image/jpeg',
+                                                        firebaseStorageDownloadTokens: uuid500
+                                                        }                                     
+                                            }), 
+                            bucket.upload(tempFilePathx1000, {  destination: newFilePathx1000,
+                                              metadata: {
+                                                        contentType: 'image/jpeg',
+                                                        firebaseStorageDownloadTokens: uuid1000
+                                                        }                                     
+                                            })                                        
+                            ]);
+      }).then((imgs)=>{
+      /*** 
+      *get the metdata of uploaded img
+      *@docs https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/1.1.0/storage/file?method=getMetadata
+      *file = data[0];
+      ***/
+        return Promise.all([imgs[0][0].getMetadata(), imgs[1][0].getMetadata()]);
+
+      }).then((metaData) => {
+          //write thumb metadata to firebase database
+          //generate the download url with uuid
+          return Promise.all([admin.database()
+                                 .ref('x500Imgs/' + postId)
+                                 .push({
+                                        timeCreated: metaData[0][0].timeCreated,
+                                        path: metaData[0][0].name,
+                                        downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[0][0].bucket + "/o/" +        encodeURIComponent(metaData[0][0].name) + "?alt=media&token=" + uuid500 
+                                        }),
+                              admin.database()
+                                 .ref('x1000Imgs/' + postId)
+                                 .push({
+                                        timeCreated: metaData[1][0].timeCreated,
+                                        path: metaData[1][0].name,
+                                        downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[1][0].bucket + "/o/" +        encodeURIComponent(metaData[1][0].name) + "?alt=media&token=" + uuid1000 
+                                        })
+                              ]);
       })
-    .then(() => {
-      console.log('Thumbnail created at', tempFilePath);
-      // We add a 'thumb_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
-      const thumbFilePath = filePath.replace(/(\/)?([^\/]*)$/, `$1thumb_$2`);
-      // Uploading the thumbnail.
-      //docs https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/1.1.0/storage/bucket?method=upload
-      return bucket.upload(tempFilePath, { destination: thumbFilePath });
-    
-    }).then((img) => {
-      //write thumbnail data to database
-        return img[0].getMetadata();
-      //NOTES urls in the metadata are not accessible by firebase app/user
-      //TODO get the url through admin and filepath and then write to db
-      //docs https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/1.1.0/storage/file?method=getMetadata
-      //docs 
-    }).then((metaData) => {
-        return admin.database()
-               .ref('thumbs/' + postId)
-               .push({//name: imgData[0].metadata.name,
-                      //publishDate: imgData[0].metadata.timeCreated,
-                     // storagePath: imgData[0].metadata.fullPath,
-                      url: metaData[0] });
-    })
-    .then(()=> {console.log("great success")})
-    .catch((error)=>{console.log(error.message)});
+      .then(()=> {console.log("great success")})
+      .catch((error)=>{console.log(error.message)});
 });
