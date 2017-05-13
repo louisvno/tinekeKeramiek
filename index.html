@@ -49,100 +49,25 @@
    </div><!--  container fluid-->
   </nav>  
 </header>
-   
-   <div class="container-fluid">
-    <div class="row">
-    
-     <div class="col-xs-12 col-sm-4">
-       <div class="col-content intro">
-       <p>Home: dit is de website van Tineke van Noorden en op deze website kun je haar keramisch werk zien.
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken </p>
-      </div>
-    </div>
-    
-    
-    <div class="col-xs-12 col-sm-8" >
-    <div class="col-content uitgelicht">
-    
-     <div class="row">
-      <div class="col-xxs-12 col-xs-6 col-sm-6">
-       <p>KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken 
-                KLik op de verschillende rubrieken </p>
-        
-      </div>
-      <div class="col-xxs-12 col-xs-6 col-sm-6 ">
-      <div class="uitgelicht-image"></div>
-<!--                  <img src="/assets/images/15726800_1650459768312446_6709251239670206311_n.jpg" alt="">-->
-      </div>
-    </div>
-    </div>
-    </div>
   
-
-
-    </div>
-    
+   <div class="container-fluid">
     <div class="row" id="main-gallery">
-    
-     <div class="col-xxs-12 col-xs-6 col-sm-3">
-         <div class="col-content">
-         <img src="assets/images/kerstballen.jpg" alt="">
-         KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-        </div>
-    </div>
-
-    
-    <div class="col-xxs-12 col-xs-6 col-sm-3"> 
-    <div class="col-content">
-     <img src="assets/images/pot.jpg" alt="">
-     KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-    </div>
-    </div>
-
-    
-    <div class="col-xxs-12 col-xs-6 col-sm-3" >
-    <div class="col-content ">
-     <img src="assets/images/schaal.jpg" alt="">
-     KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-    </div>
-    </div> 
-      <div class="col-xxs-12 col-xs-6 col-sm-3" >
-    <div class="col-content ">
-     <img src="assets/images/vogel.jpg" alt="">
-     KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-              KLik op de verschillende rubrieken 
-    </div>
-    </div>
-
-
+      <script id="gallery-temp" type="text/x-handlebars-template">
+        {{#each posts}}
+                <div class="col-xxs-12 col-xs-6 col-sm-3" data-postkey="{{@key}}">
+                    <div class="col-content">
+                        <img src="" alt=""> <!--{{this.x500.downloadUrl}}-->
+                        <h3>{{this.title}}</h3>    
+                         <p>{{this.text}}</p>              
+                    </div>
+                </div>
+        {{/each}}
+      </script>
     </div><!--row-->
-   
    </div> <!--container-fluid-->
-    <footer>facebook etc</footer>
    
-   
-  <script src="https://www.gstatic.com/firebasejs/3.7.0/firebase.js"></script>
+  <footer>facebook etc</footer>
+  <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
 	<script>
 	  // Initialize Firebase
 	  var config = {

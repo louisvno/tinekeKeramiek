@@ -59,17 +59,19 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
         const newFilePathx1000 = filePath.replace(/(\/)?([^\/]*)$/, `$1x1000_$2`);
         // Uploading the thumbnail.
         //docs https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/1.1.0/storage/bucket?method=upload
-        return Promise.all([bucket.upload(tempFilePathx500, {  destination: newFilePathx500,
+        return Promise.all([bucket.upload(tempFilePathx500, {  
+                                        destination: newFilePathx500,
+                                        metadata: {
+                                                  metadata:{firebaseStorageDownloadTokens: uuid500},
+                                                  contentType: 'image/jpeg'
+                                                  }                                   
+                                        }), 
+                            bucket.upload(tempFilePathx1000, {  
+                                              destination: newFilePathx1000,
                                               metadata: {
-                                                        contentType: 'image/jpeg',
-                                                        firebaseStorageDownloadTokens: uuid500
-                                                        }                                     
-                                            }), 
-                            bucket.upload(tempFilePathx1000, {  destination: newFilePathx1000,
-                                              metadata: {
-                                                        contentType: 'image/jpeg',
-                                                        firebaseStorageDownloadTokens: uuid1000
-                                                        }                                     
+                                                    metadata:{firebaseStorageDownloadTokens: uuid1000},
+                                                    contentType: 'image/jpeg'
+                                                    }                                    
                                             })                                        
                             ]);
       }).then((imgs)=>{

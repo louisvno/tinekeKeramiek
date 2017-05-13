@@ -1,11 +1,9 @@
-{{#each this}}
-    {{#with this as |post|}}
-        <div class="col-xxs-12 col-xs-6 col-sm-3">
+{{#each posts}}
+        <div class="col-xxs-12 col-xs-6 col-sm-3" data-postkey="{{@key}}">
             <div class="col-content">
-               <img src="{{post.images.img0.url}}" alt="">
-                <h3>{{post.title}}</h3>    
-                 <p>{{post.text}}</p>              
+                <img src="" alt=""> <!--{{this.x500.downloadUrl}}-->
+                <h3>{{this.title}}</h3>    
+                 <p>{{this.text}}</p>              
             </div>
         </div>
-    {{/with}}
 {{/each}}
