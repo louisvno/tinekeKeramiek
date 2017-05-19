@@ -1,35 +1,44 @@
-var siteMap ={
-    index : {
-            src : "index.html",
-            componentIds : ["main-gallery"] 
-            },
-    werk: { 
-            schalen : {componentIds : ["schalen"]},
-            dierfiguren : {componentIds : ["dierfiguren"]},
-            anderwerk : {componentIds : ["anderwerk"]}            
-          },
-    info: { src : "info.html",
-            componentIds : ["about-me"]
-          }
-    };
+function Component (render,async,wait){
+    this.render = render;
+    this.async = async;
+    this.wait = wait;
+}
+//component name actually main galley
+var views = [{
+      pathName: "index.html",
+      components: [new Component(loadPostsAsync.bind(null,getMostRecentPosts(12)),true,false),
+                   new Component(renderFooter,false,true)]
+  	},
+    {
+      pathName: "info.html",
+      components: [new Component(renderInfoPage,false,false),
+                   new Component(renderFooter,false,true)]
+  	},
+//    {
+//      pathName: "werk/dierfiguren.html",
+//      components: [Component(renderPostCards.bind(null,getPostsByCat("dierfiguren")),true,false),
+//                   Component(renderFooter,false,true)]
+//  	},
+//    {
+//      pathName: "werk/schalen.html",
+//      components:[Component(renderPostCards.bind(null,getPostsByCat("schalen")),true,false),
+//                   Component(renderFooter,false,true)]
+//  	}
+ ];
 
-viewController();
-
+//@ pageload
+dispatcher(getUrl());
+//@ link click
 document.addEventListener("click", function(e){
-    
     if(event.target.tagName.toLowerCase() === 'a')
     {
       e.preventDefault();
-      viewController(event.target.href); //this is the url where the anchor tag points to.
+      dispatcher(event.target.href); //this is the url where the anchor tag points to.
     }
-
 })
+//TODO @ popstate
 
-window.onpopstate = function (event) {
-//    var parsedUrl = getUrl().split("/").pop().replace("%20"," ");
-    var state = event.originalEvent.state;
-};
-
+//Firebase Queries
 function getMostRecentPosts (limit){
    return firebase.database().ref("/posts/").limitToLast(limit).once("value");
 } 
@@ -38,7 +47,7 @@ function getImgsByPostKey(folderName, postKey) {
    return firebase.database().ref("/" + folderName + "/" + postKey).once("value");
 }
 
-function viewController (path){
+function getUrl (path){
     var pathName ="";
     //get url
     if (path){ 
@@ -47,30 +56,8 @@ function viewController (path){
     } else {
       pathName = window.location.pathname;
     }
-    //hide everything in the view
     clearView();
-    //parse url
-    var pathItems = pathName.split("/");
-    switch(pathItems.length){
-      case 1 :
-          //renderhomepage
-          renderHomePage();
-          break;
-      case 2 :
-          //dispatcher
-          switch (pathItems[1]){
-             case "" || siteMap.index.src :
-                 renderHomePage();
-                 break;
-             case siteMap.info.src :
-                 renderInfoPage();
-                 break;
-             }
-          break;   
-      case 3 :
-        //dispatcher
-          break;
-    }
+    return pathName.split("/").pop();
 }
 
 function clearView(){
@@ -81,15 +68,19 @@ function clearView(){
 }
 
 function renderInfoPage(){
-    showComponents(siteMap.info.componentIds);
+    showComponent("about-me");
 }
 
+function renderPostCards(posts){
+    var template = document.getElementById("gallery-temp").innerHTML;
+    var renderTmpl = Handlebars.compile(template);
+    var html = renderTmpl(posts);
+    document.getElementById('main-gallery').innerHTML=html;
+    showComponent('main-gallery');
+}
 
-function renderHomePage(){ 
-    showComponents(siteMap.index.componentIds);
-    loadPostsAsync( getMostRecentPosts(12) ).then(function (data){
-        showComponents(["footer"]);
-    });
+function renderFooter(){
+   showComponent("footer");
 }
 
 //@param postQuery = query to firebase (Promise)
@@ -122,18 +113,45 @@ function loadPostsAsync(postQuery) {
         }).catch(function(error){console.log(error)}) ;
 }
 
-
-
-function renderPostCards(posts){
-    var template = document.getElementById("gallery-temp").innerHTML;
-    var renderTmpl = Handlebars.compile(template);
-    var html = renderTmpl(posts);
-    document.getElementById('main-gallery').innerHTML=html;
+function showComponent (id){ 
+    document.getElementById(id).style.display = "block";
 }
 
-function showComponents (components){ 
-  for(var i=0; i < components.length;i++){ 
-    document.getElementById(components[i]).style.display = "block";
+//general view renderfunction
+function renderView(view) {
+  var queue = [];
+  var asyncP = [];
+  //Control rendering order based on component properties "wait" and "async"
+  for (var i = 0; i < view.components.length; i++) {
+    var component = view.components[i];
+
+    if (component.async) {
+      asyncP.push(component.render());
+    } else if (!component.async && !component.wait) {
+      component.render();
+    } else {
+      queue.push(component);
+    }
   }
+  //queue executes after all async components are rendered
+  Promise.all(asyncP).then(function() {
+    queue.forEach(function(comp) {
+      comp.render();
+    });
+  })
 }
 
+function dispatcher(getUrl) {
+  var pathName = this.getUrl();
+  var v = views.filter(function(view) {
+    return view.pathName == pathName;
+  })
+	if (v != null && v.length == 1){
+  	renderView(v[0]);
+  }else if (v != null && v.length >1){
+  	throw new Error ("path could not be resolved: path duplicate");
+  } else {
+  	throw new Error ("path could not be resolved: does not exist");
+  }
+  
+}
