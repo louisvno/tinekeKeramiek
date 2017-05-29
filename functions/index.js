@@ -93,31 +93,35 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
         return Promise.all([imgs[0][0].getMetadata(), imgs[1][0].getMetadata(), imgs[2][0].getMetadata()]);
 
       }).then((metaData) => {
-          //write thumb metadata to firebase database
+      
+          var ref= admin.database().ref(functions.config().database.x500path + "/" +postId + "/");
+          var key = ref.push().key;
+              //write thumb metadata to firebase database
           //generate the download url with uuid
-          return Promise.all([admin.database()
-                                 .ref(functions.config().database.x500path + "/" +postId)
-                                 .push({
-                                        timeCreated: metaData[0][0].timeCreated,
-                                        path: metaData[0][0].name,
-                                        downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[0][0].bucket + "/o/" +        encodeURIComponent(metaData[0][0].name) + "?alt=media&token=" + uuid500 
-                                        }),
-                              admin.database()
-                                 .ref(functions.config().database.x1000path + "/"+postId)
-                                 .push({
-                                        timeCreated: metaData[1][0].timeCreated,
-                                        path: metaData[1][0].name,
-                                        downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[1][0].bucket + "/o/" +        encodeURIComponent(metaData[1][0].name) + "?alt=media&token=" + uuid1000 
-                                        }),
-                               admin.database()
-                                 .ref(functions.config().database.thumbpath + "/"+postId)
-                                 .push({
-                                        timeCreated: metaData[2][0].timeCreated,
-                                        path: metaData[2][0].name,
-                                        downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[2][0].bucket + "/o/" +        encodeURIComponent(metaData[2][0].name) + "?alt=media&token=" + uuidThumb
-                                        })
-                              ]);
-      })
+            return Promise.all([admin.database()
+                                   .ref(functions.config().database.x500path + "/" +postId + "/" + key)
+                                   .set({
+                                          timeCreated: metaData[0][0].timeCreated,
+                                          path: metaData[0][0].name,
+                                          downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[0][0].bucket + "/o/" +        encodeURIComponent(metaData[0][0].name) + "?alt=media&token=" + uuid500 
+                                          }),
+                                admin.database()
+                                   .ref(functions.config().database.x1000path + "/" + postId + "/" + key)
+                                   .set({
+                                          timeCreated: metaData[1][0].timeCreated,
+                                          path: metaData[1][0].name,
+                                          downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[1][0].bucket + "/o/" +        encodeURIComponent(metaData[1][0].name) + "?alt=media&token=" + uuid1000 
+                                          }),
+                                 admin.database()
+                                   .ref(functions.config().database.thumbpath + "/" +postId +"/" + key)
+                                   .set({
+                                          timeCreated: metaData[2][0].timeCreated,
+                                          path: metaData[2][0].name,
+                                          downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[2][0].bucket + "/o/" +        encodeURIComponent(metaData[2][0].name) + "?alt=media&token=" + uuidThumb
+                                          })
+                                ]);
+            })
+          
       .then(()=> {console.log("great success")})
       .catch((error)=>{console.log(error.message)});
 });
