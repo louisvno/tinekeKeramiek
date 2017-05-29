@@ -27,7 +27,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-        <a class="navbar-brand" href="#">TinekeKeramiek</a>
+        <a class="navbar-brand" href="/index.html">TinekeKeramiek</a>
         </div>
 
        <div class="collapse navbar-collapse" id="nav-menu">
@@ -41,7 +41,7 @@
                 <li><a href="/werk/anderwerk.html">Ander werk</a></li>
               </ul>
           </li>
-          <li><a href="info.html">Info</a></li>
+          <li><a href="/info.html">Info</a></li>
         </ul> 
        </div> 
   
@@ -56,14 +56,26 @@
     <div class="row component" id="about-me">
       <div class="col-xxs-12 col-sm-3">
         <div id="profiel-pic-container">
-            <!--profile picture -->
+            <!--profile picture as bg -->
         </div>
       </div>
       <div class="col-xxs-12 col-sm-3">
         <p>
-          Hallo Hallo Hallo Hallo Hallo 
-          Hallo Hallo Hallo Hallo Hallo 
-          Hallo Hallo Hallo Hallo Hallo 
+          Tineke van Noorden
+           Geboren: 1958
+            Opleiding: Tehatex Maastricht, lerares handvaardigheid 
+            Enkele workshops gevolgd en verder autodidact 
+            Bij het CAN in Nuenen keramiekcursussen gegeven
+            Op Westerwind ( Zorgroep Archipel Eindhoven) samen met een collega de keramiekgroep begeleidt. 
+
+            Werkruimte: Mgr. Frenkenstraat 
+                                    5674 RW Nuenen
+                                    tel. 040 2834989
+                                           0633977853
+                                     Na een telefonische afspraak kan deze bezichtigd worden.
+
+             Mailadres: tinekekeramiek58@gmail.com
+             Facebookpagina: Tinekekeramiek
         </p>
       </div>
     </div>
@@ -71,21 +83,48 @@
     <div class="row component" id="main-gallery">
     <script id="gallery-temp" type="text/x-handlebars-template">
       {{#each posts}}
-          <div class="col-xxs-12 col-xs-6 col-sm-3" data-postkey="{{@key}}">
+          <div class="col-xxs-12 col-xs-6 col-sm-4 col-md-3" data-postkey="{{@key}}">
               <div class="col-content">
                   <img src="" alt=""> 
                   <h3>{{this.title}}</h3>    
-                  <p>{{this.text}}</p>              
+                  <p>{{this.text}}</p>
+                  <div class="row">
+                  <div class="col-xxs-6"></div>
+                  <div class="col-xxs-6">
+                     <div class= "card-action">
+                      <a href="/werk/{{this.category}}/{{@key}}" class="text-right" style="display:block">BEKIJK</a>  
+                      </div>
+                  </div>  
+                  </div>              
               </div>
           </div>
       {{/each}}
     </script>
   </div><!--row-->
+  
+  <div class="row component" id="work-details">
+    <div class="center-block" style="max-width:800px;">
+      <div class="col-xxs-12 col-sm-12" >
+        <h2 id="post-details-title"></h2>
+      </div>
+      <div class="col-xxs-12 col-sm-6">
+        <img id="highlighted" src="" alt="">
+      </div>
+      <div class="col-xxs-12 col-sm-6">
+          <div class="row" id="thumb-container">
+
+          </div>
+      </div>
+      
+      <div class="col-xxs-12 col-sm-12" id="post-details-desc">
+
+      </div>
+    </div>   
+  </div>
+   
  </div> <!--container-fluid-->
 
-
-<footer class="component" id="footer">{{name}}</footer>
-
+<footer class="component" id="footer"></footer>
 
 <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
 <script>
