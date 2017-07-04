@@ -1,9 +1,0 @@
-{{#each posts}}
-        <div class="col-xxs-12 col-xs-6 col-sm-3" data-postkey="{{@key}}">
-            <div class="col-content">
-                <img src="" alt=""> <!--{{this.x500.downloadUrl}}-->
-                <h3>{{this.title}}</h3>    
-                 <p>{{this.text}}</p>              
-            </div>
-        </div>
-{{/each}}

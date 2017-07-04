@@ -1,5 +1,12 @@
 
 var provider = new firebase.auth.GoogleAuthProvider();
+var profile = {
+    //production
+    //postPath = "posts";
+    //Test
+    postPath : "test_posts"
+};
+    
 
 document.getElementById("send-post").addEventListener("click",function (e){
     var cloudStorage = firebase.storage(),
@@ -53,8 +60,8 @@ function getStorageRef (cloudStorage, folderName, fileName){
 }
 
 function getPostRef(database){
-    var postId = database.ref().child("posts").push().key;
-    var path = database.ref("posts/" + postId)
+    var postId = database.ref().child(profile.postPath).push().key;
+    var path = database.ref(profile.postPath + "/" + postId)
 
     return  { postId: postId,
               path:  path
@@ -100,6 +107,7 @@ function sendPost(cloudStorage, database){
            }
         })
         .then(function (imgData){
+            clearForm();
             return "Upload success!";
         }).catch(function(error){
             throw error;
@@ -112,6 +120,16 @@ function getFormInput() {
         title: document.getElementById("post-title").value,
         category : document.getElementById("post-category").value
     };
+}
+
+function clearForm(){
+  document.getElementById("post-text").value="";
+  document.getElementById("post-title").value="";
+  document.getElementById("post-category").selectedIndex="0";
+  var fileFields = getFiles();
+  for (var i=0; i< fileFields.length;i++){
+     fileFields[i].value ="";
+  }
 }
 
 function getFiles () {

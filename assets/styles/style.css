@@ -99,7 +99,7 @@ footer{
 
 p{
  padding:10px;
-
+ margin:0px;
 }
 
 .col-content{
@@ -127,6 +127,11 @@ box-shadow: 1px 1px 2px 2px 1gba(0,0,0,0.3);
   width:auto;
 }
 
+.card-action{
+    padding:10px;
+    padding-right:20px;
+}
+
 .uitgelicht-image{
   background-image: url("/assets/images/12107740_1220800871278340_1154893255506882186_n.jpg");
   background-repeat: no-repeat;
@@ -134,6 +139,15 @@ box-shadow: 1px 1px 2px 2px 1gba(0,0,0,0.3);
   height: 300px;
 }
 
+#highlighted{
+ max-height: 400px;
+}
+.truncate {
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 @media (min-width: 768px) {
  .navbar-brand{
