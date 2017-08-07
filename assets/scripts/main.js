@@ -121,6 +121,10 @@ document.addEventListener("click", function(e){
     }
     
 });
+
+document.getElementById("up-button").addEventListener("click", function(e){
+    $('html, body').animate({ scrollTop: 0 }, 'fast');
+})
 //when user uses forward of backward button of browser
 window.onpopstate = function(event) {
   dispatcher();
