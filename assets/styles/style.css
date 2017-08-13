@@ -4,7 +4,7 @@
 
 #main-banner {    
   background-image: url(../images/arches.png),url(../images/bg-blur.png) ;
-  background-size: auto, cover;
+  background-size: auto, auto;
   background-repeat: repeat, no-repeat;
 }
 
@@ -175,9 +175,13 @@ p{
   margin-top: 10px;
   border-radius: 50%;
   background-color: rgba(255,255,255,0.50);
+  margin-right:15px;
 }
 #up-button img {
   margin-top: 10px;
+}
+#up-button-container{
+  text-align: right;
 }
 
 @media (min-width: 768px) {

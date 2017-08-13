@@ -38,19 +38,19 @@ function App(){
           components: [new Component(null,"intro",false,false),new Component(loadPostCardsAsync.bind(null,getMostRecentPosts.bind(null,12)),"main-gallery",true,false),
                        new Component(null,"footer",false,true)]
         },{
-          pathName: "/info.html",
+          pathName: "/info",
           components: [new Component(null,"about-me",false,false),
                        new Component(null,"footer",false,true)]
         },{
-          pathName: "/werk/schalen.html",
+          pathName: "/werk/schalen",
           components: [new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"schalen")),"main-gallery",true,false),
                       new Component(null,"footer",false,true)]
         },{
-          pathName: "/werk/dierfiguren.html",
+          pathName: "/werk/dierfiguren",
           components:[new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"dierfiguren")),"main-gallery",true,false),
                        new Component(null,"footer",false,true)]
         },{
-          pathName: "/werk/anderwerk.html",
+          pathName: "/werk/anderwerk",
           components:[new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"anderwerk")),"main-gallery",true,false),
                       new Component(null,"footer",false,true)]
         },{
@@ -102,24 +102,31 @@ function App(){
  }
  
 //Event handlers
-document.addEventListener("click", function(e){
-    if(event.target.tagName.toLowerCase() === 'a')
-    {
+document.getElementById("main-gallery").addEventListener("click", function(e){
+    if(e.target.tagName.toLowerCase() === 'a'){
       e.preventDefault();
-      if(event.target.pathname != "/werk"){
-        window.history.pushState(null,"",event.target.pathname); //this is the url where the anchor tag points to.
-        dispatcher();
-        }
+      window.history.pushState(null,"",e.target.pathname); 
+      dispatcher();  
     }
-    if(event.target.hasAttribute('data-img-id')){
-       var imgId = event.target.getAttribute('data-img-id');
+});
+
+document.getElementById("nav-menu").addEventListener("click", function(e){
+    if(e.target.tagName.toLowerCase() === 'a'){
+      e.preventDefault();
+      window.history.pushState(null,"",e.target.pathname); 
+      dispatcher();  
+    }
+});
+
+document.getElementById("thumb-container").addEventListener("click", function(e){
+    if(e.target.hasAttribute('data-img-id')){
+       var imgId = e.target.getAttribute('data-img-id');
        var postId = window.location.pathname.split("/").pop();
        getx500ById(postId,imgId).then(function(data){
           var imgObj = data.val();
           document.getElementById('highlighted').setAttribute('src',imgObj.downloadUrl);
        })
     }
-    
 });
 
 document.getElementById("up-button").addEventListener("click", function(e){
@@ -240,7 +247,7 @@ function loadThumbs(postId){
               var myImg = new Image(150, 150);
               myImg.src = thumb.downloadUrl;
               var div = document.createElement("div");
-              div.classList.add('col-xxs-3', 'col-xs-6', 'col-sm-6', 'col-md-6');
+              div.classList.add('col-xxs-3', 'col-xs-3', 'col-sm-6', 'col-md-6');
               myImg.setAttribute('data-img-id', thumbnail.key);
               div.appendChild(myImg);
               container.appendChild(div);
