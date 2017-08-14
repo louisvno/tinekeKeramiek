@@ -10,14 +10,15 @@ function initApp(){
 //@param id: string, HTML id
 //@param async: boolean, if loaded async
 //@param wait: boolean, if component has to wait for others rendering
-function Component (render,id,async,wait){
+function Component (render,id,async,wait,displayMode){
     this.render = render;
     this.id = id;
     this.async = async;
     this.wait = wait;
+    this.displayMode=displayMode;
     
     this.show =function (){ 
-      document.getElementById(this.id).style.display = "block";
+      document.getElementById(this.id).style.display = this.displayMode;
     }
 }
 
@@ -30,35 +31,35 @@ function App(){
     //this.imgx500path = "test_x500Imgs";
     this.views = [{
           pathName: "/",
-          components: [new Component(null,"intro",false,false),
-          new Component(loadPostCardsAsync.bind(null,getMostRecentPosts.bind(null,12)),"main-gallery",true,false),
-                       new Component(null,"footer",false,true)]
+          components: [new Component(null,"intro",false,false,"block"),
+          new Component(loadPostCardsAsync.bind(null,getMostRecentPosts.bind(null,12)),"main-gallery",true,false,"block"),
+                       new Component(null,"footer",false,true,"block")]
         },{
           pathName: "/index.html",
-          components: [new Component(null,"intro",false,false),new Component(loadPostCardsAsync.bind(null,getMostRecentPosts.bind(null,12)),"main-gallery",true,false),
-                       new Component(null,"footer",false,true)]
+          components: [new Component(null,"intro",false,false,"block"),new Component(loadPostCardsAsync.bind(null,getMostRecentPosts.bind(null,12)),"main-gallery",true,false,"block"),
+                       new Component(null,"footer",false,true,"block")]
         },{
           pathName: "/info",
-          components: [new Component(null,"about-me",false,false),
-                       new Component(null,"footer",false,true)]
+          components: [new Component(null,"about-me",false,false,"block"),
+                       new Component(null,"footer",false,true,"block")]
         },{
           pathName: "/werk/schalen",
-          components: [new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"schalen")),"main-gallery",true,false),
-                      new Component(null,"footer",false,true)]
+          components: [new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"schalen")),"main-gallery",true,false,"block"),
+                      new Component(null,"footer",false,true,"block")]
         },{
           pathName: "/werk/dierfiguren",
-          components:[new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"dierfiguren")),"main-gallery",true,false),
-                       new Component(null,"footer",false,true)]
+          components:[new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"dierfiguren")),"main-gallery",true,false,"block"),
+                       new Component(null,"footer",false,true,"block")]
         },{
           pathName: "/werk/anderwerk",
-          components:[new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"anderwerk")),"main-gallery",true,false),
-                      new Component(null,"footer",false,true)]
+          components:[new Component(loadPostCardsAsync.bind(null,getPostsByCat.bind(null,"anderwerk")),"main-gallery",true,false,"block"),
+                      new Component(null,"footer",false,true,"block")]
         },{
           pathName: "/werk/{category}/{postId}",
-          components:[new Component(loadPostDetails,"work-details",true,false),
-                      new Component(loadThumbs,"thumb-container",true,false),
-                      new Component(loadPostImg,"highlighted",true,false),
-                      new Component(null,"footer",false,true)]
+          components:[new Component(loadPostDetails,"work-details",true,false,"block"),
+                      new Component(loadThumbs,"thumb-container",true,false,"inline-block"),
+                      new Component(loadPostImg,"highlighted",true,false,"inline-block"),
+                      new Component(null,"footer",false,true,"block")]
         }
      ];
      
@@ -122,11 +123,20 @@ document.getElementById("thumb-container").addEventListener("click", function(e)
     if(e.target.hasAttribute('data-img-id')){
        var imgId = e.target.getAttribute('data-img-id');
        var postId = window.location.pathname.split("/").pop();
+       var loader = document.querySelector('.loader');
+       loader.style.display= 'inline-block';
+       loader.classList.add('spin');
        getx500ById(postId,imgId).then(function(data){
           var imgObj = data.val();
           document.getElementById('highlighted').setAttribute('src',imgObj.downloadUrl);
        })
     }
+});
+
+document.getElementById('highlighted').addEventListener("load", function(e){
+      var loader = document.querySelector('.loader');
+      loader.style.display= 'none';
+      loader.classList.remove('spin');
 });
 
 document.getElementById("up-button").addEventListener("click", function(e){
@@ -238,7 +248,7 @@ function loadPostImg(){
 //TODO thumbs should have img x500 id
 function loadThumbs(postId){
   var postId = window.location.pathname.split("/").pop();
-  
+   
   return getThumbsByPostId(postId).then(function(data){
           var container=document.getElementById("thumb-container");
           container.innerHTML = "";
@@ -246,11 +256,12 @@ function loadThumbs(postId){
               var thumb = thumbnail.val();      
               var myImg = new Image(150, 150);
               myImg.src = thumb.downloadUrl;
-              var div = document.createElement("div");
-              div.classList.add('col-xxs-3', 'col-xs-3', 'col-sm-6', 'col-md-6');
+//              var div = document.createElement("div");
+//              div.classList.add('col-xxs-3', 'col-xs-3', 'col-sm-6', 'col-md-6');
               myImg.setAttribute('data-img-id', thumbnail.key);
-              div.appendChild(myImg);
-              container.appendChild(div);
+              myImg.classList.add("work-thumbnail");
+              container.appendChild(myImg);
+//              container.appendChild(div);
           });
       });
 }
