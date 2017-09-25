@@ -23,12 +23,12 @@ function Component (render,id,async,wait,displayMode){
 }
 
 function App(){
-    this.postPath = "/test_posts/";
-    this.imgx500path = "test_x500Imgs";
-    this.thumbsPath = "test_thumbnails"
-    //test vars
-    //this.postPath = "/test_posts/";
-    //this.imgx500path = "test_x500Imgs";
+      this.postPath = "/posts/";
+      this.imgx500path = "x500Imgs";
+      this.thumbsPath = "thumbnails"
+//    this.postPath = "/test_posts/";
+//    this.imgx500path = "test_x500Imgs";
+//    this.thumbsPath = "test_thumbnails"
     this.views = [{
           pathName: "/",
           components: [new Component(null,"intro",false,false,"block"),
@@ -174,6 +174,7 @@ function dispatcher() {
   })
 	if (v != null && v.length == 1){
   	app.renderView(v[0]);
+    $('html,body').scrollTop(0);
   }else if (v != null && v.length >1){
   	throw new Error ("path could not be resolved: path duplicate");
   } else {

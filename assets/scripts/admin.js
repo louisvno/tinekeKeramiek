@@ -2,9 +2,9 @@
 var provider = new firebase.auth.GoogleAuthProvider();
 var profile = {
     //production
-    //postPath = "posts";
+    postPath : "posts"
     //Test
-    postPath : "test_posts"
+    //postPath : "test_posts"
 };
     
 
