@@ -1,10 +1,25 @@
+
 initApp();
 
 function initApp(){
   this.app = new App();
   dispatcher();
 };
-
+var $grid;
+function initMasonry(){
+    $grid=$('.grid').masonry({
+        itemSelector: '.grid-item', // use a separate class for itemSelector, other than .col-
+        columnWidth: '.grid-sizer',
+        percentPosition: true,
+        horizontalOrder: true
+    });
+ 
+}
+function subscribeToImageLoaded(){
+    $grid.imagesLoaded().progress( function() {
+        $grid.masonry('layout');
+      });
+}
 //Component class
 //@param render: function (optional), renders component to screen
 //@param id: string, HTML id
@@ -195,6 +210,7 @@ function renderPostCards(posts){
     
     wrapper.innerHTML = html;   
     document.getElementById('main-gallery').appendChild(wrapper);
+    initMasonry();
 }
 //TODO break up this function?
 //@param postQuery = query to firebase (Promise)
@@ -202,7 +218,9 @@ function loadPostCardsAsync(postQuery) {
     var dataModel = {};
     return postQuery()
         .then(function (posts){
-            dataModel.posts = posts.val();
+            var allPosts = posts.val();
+            var keys = Object.keys(allPosts);
+            dataModel.posts = allPosts;
             renderPostCards(dataModel);
             var imgs=[];
             Object.keys(dataModel.posts).forEach(function(postKey){
@@ -222,6 +240,7 @@ function loadPostCardsAsync(postQuery) {
                   img.src =url;
                 }
             }
+            subscribeToImageLoaded();
             return dataModel;
         }).catch(function(error){console.log(error)}) ;
 }
@@ -257,12 +276,9 @@ function loadThumbs(postId){
               var thumb = thumbnail.val();      
               var myImg = new Image(150, 150);
               myImg.src = thumb.downloadUrl;
-//              var div = document.createElement("div");
-//              div.classList.add('col-xxs-3', 'col-xs-3', 'col-sm-6', 'col-md-6');
               myImg.setAttribute('data-img-id', thumbnail.key);
               myImg.classList.add("work-thumbnail");
               container.appendChild(myImg);
-//              container.appendChild(div);
           });
       });
 }

@@ -50,7 +50,7 @@
   
 
   
- <div class="container-fluid">
+ <div class="container">
    
     <div class="row component" id="about-me">
       <div class="col-xxs-12 col-sm-3">
@@ -124,15 +124,16 @@
       </div>
     </div>
 
-    
-    <div class="row component" id="main-gallery">
+    <div class="component" id="main-gallery">
     <script id="gallery-temp" type="text/x-handlebars-template">
+      <div class="grid">
+      <div class="grid-sizer col-xxs-12 col-xs-6 col-sm-4 col-md-3"></div>
       {{#each posts}}
-          <div class="col-xxs-12 col-xs-6 col-sm-4 col-md-3" data-postkey="{{@key}}">
+          <div class="grid-item col-xxs-12 col-xs-6 col-sm-4 col-md-3" data-postkey="{{@key}}">
               <div class="col-content">
                   <img src="" alt=""> 
                   <h3>{{this.title}}</h3>    
-                  <p class="truncate">{{this.text}}</p>
+                  <!-- <p class="truncate">{{this.text}}</p> -->
                   <div class="row">
                   <div class="col-xxs-6"></div>
                   <div class="col-xxs-6">
@@ -144,6 +145,8 @@
               </div>
           </div>
       {{/each}}
+      </div>
+      </div>
     </script>
   </div><!--row-->
   
@@ -166,7 +169,7 @@
     </div>   
   </div>
    
- </div> <!--container-fluid-->
+ </div> <!--container-fluid -->
 
 <footer class="component" id="footer">
   <div id="footer-content">
@@ -194,7 +197,9 @@
 </script>
 <script src="/assets/libs/jquery-3.1.1.min.js"></script>
 <script src="/assets/libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="/assets/libs/masonry-layout/dist/masonry.pkgd.min.js"></script>
 <script src="/assets/libs/handlebars-v4.0.5.js"></script>
+<script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
 <script src="/assets/scripts/main.js"></script>
 
 </body>
