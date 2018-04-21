@@ -3,12 +3,9 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const gcs = require('@google-cloud/storage')();
 const spawn = require('child-process-promise').spawn;
- // Create and Deploy Your First Cloud Functions
- // https://firebase.google.com/docs/functions/write-firebase-functions
-admin.initializeApp(functions.config().firebase);
+admin.initializeApp();
 
-exports.generateThumbnail = functions.storage.object().onChange(event => {
-    const object = event.data; // The Storage object.
+exports.generateThumbnail = functions.storage.object().onFinalize(object => {
     const fileBucket = object.bucket; // The Storage bucket that contains the file.
     const filePath = object.name; // File path in the bucket.
     const contentType = object.contentType; // File content type.
@@ -93,27 +90,27 @@ exports.generateThumbnail = functions.storage.object().onChange(event => {
         return Promise.all([imgs[0][0].getMetadata(), imgs[1][0].getMetadata(), imgs[2][0].getMetadata()]);
 
       }).then((metaData) => {
-      
-          var ref= admin.database().ref(functions.config().database.x500path + "/" +postId + "/");
+          let config = functions.config();
+          var ref= admin.database().ref(config.database.x500path + "/" +postId + "/");
           var key = ref.push().key;
               //write thumb metadata to firebase database
           //generate the download url with uuid
             return Promise.all([admin.database()
-                                   .ref(functions.config().database.x500path + "/" +postId + "/" + key)
+                                   .ref(config.database.x500path + "/" +postId + "/" + key)
                                    .set({
                                           timeCreated: metaData[0][0].timeCreated,
                                           path: metaData[0][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[0][0].bucket + "/o/" +        encodeURIComponent(metaData[0][0].name) + "?alt=media&token=" + uuid500 
                                           }),
                                 admin.database()
-                                   .ref(functions.config().database.x1000path + "/" + postId + "/" + key)
+                                   .ref(config.database.x1000path + "/" + postId + "/" + key)
                                    .set({
                                           timeCreated: metaData[1][0].timeCreated,
                                           path: metaData[1][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[1][0].bucket + "/o/" +        encodeURIComponent(metaData[1][0].name) + "?alt=media&token=" + uuid1000 
                                           }),
                                  admin.database()
-                                   .ref(functions.config().database.thumbpath + "/" +postId +"/" + key)
+                                   .ref(config.database.thumbpath + "/" +postId +"/" + key)
                                    .set({
                                           timeCreated: metaData[2][0].timeCreated,
                                           path: metaData[2][0].name,
