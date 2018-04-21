@@ -1,2 +1,4 @@
 node_modules/
 public/
+.vscode/
+functions/node_modules
