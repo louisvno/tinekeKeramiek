@@ -219,8 +219,10 @@ function loadPostCardsAsync(postQuery) {
     return postQuery()
         .then(function (posts){
             var allPosts = posts.val();
-            var keys = Object.keys(allPosts);
-            dataModel.posts = allPosts;
+            var keys = Object.keys(allPosts).reverse(); //todo make optional sorting
+            let sortedPosts = {};
+            keys.forEach(key => sortedPosts[key] = allPosts[key]);
+            dataModel.posts = sortedPosts;
             renderPostCards(dataModel);
             var imgs=[];
             Object.keys(dataModel.posts).forEach(function(postKey){
