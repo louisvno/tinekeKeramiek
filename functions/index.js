@@ -115,6 +115,14 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
                                           timeCreated: metaData[2][0].timeCreated,
                                           path: metaData[2][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[2][0].bucket + "/o/" +        encodeURIComponent(metaData[2][0].name) + "?alt=media&token=" + uuidThumb
+                                          }),
+                                 admin.database()
+                                   .ref(config.database.imgstoragepaths + "/" +postId +"/" + key)
+                                   .set({
+                                          source: filePath,
+                                          thumbnail : metaData[2][0].name,
+                                          x500 : metaData[0][0].name,
+                                          x1000:  metaData[1][0].name
                                           })
                                 ]);
             })
