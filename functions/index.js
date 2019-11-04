@@ -123,6 +123,11 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
                                           thumbnail : metaData[2][0].name,
                                           x500 : metaData[0][0].name,
                                           x1000:  metaData[1][0].name
+                                          }),
+                                  admin.database()
+                                   .ref(config.database.sourcepath + "/" +postId +"/" + key)
+                                   .set({
+                                          path: filePath,
                                           })
                                 ]);
             })
