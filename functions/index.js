@@ -3,6 +3,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const gcs = require('@google-cloud/storage')();
 const spawn = require('child-process-promise').spawn;
+const defaultBucket = "tinekekeramiek.appspot.com";
 admin.initializeApp();
 
 exports.generateThumbnail = functions.storage.object().onFinalize(object => {
@@ -116,14 +117,6 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
                                           path: metaData[2][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[2][0].bucket + "/o/" +        encodeURIComponent(metaData[2][0].name) + "?alt=media&token=" + uuidThumb
                                           }),
-                                 admin.database()
-                                   .ref(config.database.imgstoragepaths + "/" +postId +"/" + key)
-                                   .set({
-                                          source: filePath,
-                                          thumbnail : metaData[2][0].name,
-                                          x500 : metaData[0][0].name,
-                                          x1000:  metaData[1][0].name
-                                          }),
                                   admin.database()
                                    .ref(config.database.sourcepath + "/" +postId +"/" + key)
                                    .set({
@@ -135,3 +128,23 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
       .then(()=> {console.log("great success")})
       .catch((error)=>{console.log(error.message)});
 });
+// could also make one function per imgpath, since i dont expect many delete actions should be fine for now
+// a super high performance is not required anyways
+exports.deleteOneImg = functions.database.ref("{root}/{postId}/{key}").onDelete((snapshot,context)=>{
+    const imgData = snapshot.val();
+    if(context.params.root === functions.config().database.thumbpath ||
+    context.params.root === functions.config().database.x500path ||
+    context.params.root === functions.config().database.x1000path ||
+    context.params.root === functions.config().database.sourcepath
+    ){
+      //delete from storage
+      return gcs.bucket(defaultBucket).file(imgData.path).delete().then(
+        console.log("Image at " + imgData.path + " deleted.")
+      );
+    } else {
+      return new Promise((resolve)=>{
+        console.warn("No image deleted: root is no image root")
+        resolve();
+      });
+    }
+})
