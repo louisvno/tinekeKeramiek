@@ -28,6 +28,9 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
     const fileName = filePath.split('/').pop();
     //Get postId
     const postId = filePath.split('/').shift();
+    console.info("post id set to: " + postId)
+    const key = filePath.split('/')[1];
+    console.info("img id set to: " + key)
     //Generate custom uuid to be able to reference in database
     const uuid500 = UUID();
     const uuid1000 = UUID();
@@ -92,33 +95,33 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
 
       }).then((metaData) => {
           let config = functions.config();
-          var ref= admin.database().ref(config.database.x500path + "/" +postId + "/");
-          var key = ref.push().key;
+          //var ref= admin.database().ref(config.database.temp_x500path + "/" +postId + "/");
+          //var key = ref.push().key;
               //write thumb metadata to firebase database
           //generate the download url with uuid
             return Promise.all([admin.database()
-                                   .ref(config.database.x500path + "/" +postId + "/" + key)
+                                   .ref(config.database.temp_x500path + "/" +postId + "/" + key)
                                    .set({
                                           timeCreated: metaData[0][0].timeCreated,
                                           path: metaData[0][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[0][0].bucket + "/o/" +        encodeURIComponent(metaData[0][0].name) + "?alt=media&token=" + uuid500 
                                           }),
                                 admin.database()
-                                   .ref(config.database.x1000path + "/" + postId + "/" + key)
+                                   .ref(config.database.temp_x1000path + "/" + postId + "/" + key)
                                    .set({
                                           timeCreated: metaData[1][0].timeCreated,
                                           path: metaData[1][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[1][0].bucket + "/o/" +        encodeURIComponent(metaData[1][0].name) + "?alt=media&token=" + uuid1000 
                                           }),
                                  admin.database()
-                                   .ref(config.database.thumbpath + "/" +postId +"/" + key)
+                                   .ref(config.database.temp_thumbpath + "/" +postId +"/" + key)
                                    .set({
                                           timeCreated: metaData[2][0].timeCreated,
                                           path: metaData[2][0].name,
                                           downloadUrl: "https://firebasestorage.googleapis.com/v0/b/" + metaData[2][0].bucket + "/o/" +        encodeURIComponent(metaData[2][0].name) + "?alt=media&token=" + uuidThumb
                                           }),
                                   admin.database()
-                                   .ref(config.database.sourcepath + "/" +postId +"/" + key)
+                                   .ref(config.database.temp_sourcepath + "/" +postId +"/" + key)
                                    .set({
                                           path: filePath,
                                           })
