@@ -11,9 +11,14 @@
     ],
     "rewrites": [
       {
+        "source": "/adminv2",
+        "destination": "/adminv2"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
+
     ]
   },
   "storage": {
