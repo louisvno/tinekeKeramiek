@@ -1,7 +1,8 @@
-const UUID = require("uuid/v4");
 const functions = require('firebase-functions');
+const { v4: UUID } = require('uuid');
 const admin = require('firebase-admin');
-const gcs = require('@google-cloud/storage')();
+const {Storage} = require('@google-cloud/storage');
+const gcs = new Storage();
 const spawn = require('child-process-promise').spawn;
 const defaultBucket = "tinekekeramiek.appspot.com";
 admin.initializeApp();
@@ -11,7 +12,6 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
     const filePath = object.name; // File path in the bucket.
     const contentType = object.contentType; // File content type.
     const resourceState = object.resourceState; // The resourceState is 'exists' or 'not_exists' (for file/folder deletions).
-
     // Download file from bucket.
     const bucket = gcs.bucket(fileBucket);
     const tempFilePath = "/tmp/${fileName}";
@@ -58,9 +58,9 @@ exports.generateThumbnail = functions.storage.object().onFinalize(object => {
         })
       .then(() => {
         // Add a 'preview_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
-        const newFilePathx500 = filePath.replace(/(\/)?([^\/]*)$/, `$1x500_$2`);
-        const newFilePathx1000 = filePath.replace(/(\/)?([^\/]*)$/, `$1x1000_$2`);
-        const newFilePathThumb = filePath.replace(/(\/)?([^\/]*)$/, `$1thumb_$2`) +".png";
+        const newFilePathx500 = filePath.replace(/(\/)?([^/]*)$/, `$1x500_$2`);
+        const newFilePathx1000 = filePath.replace(/(\/)?([^/]*)$/, `$1x1000_$2`);
+        const newFilePathThumb = filePath.replace(/(\/)?([^/]*)$/, `$1thumb_$2`) +".png";
         // Uploading the thumbnail.
         //docs https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/1.1.0/storage/bucket?method=upload
         return Promise.all([bucket.upload(tempFilePathx500, {  
